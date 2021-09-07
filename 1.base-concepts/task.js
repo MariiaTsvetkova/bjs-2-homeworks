@@ -20,13 +20,13 @@ function solveEquation(a, b, c) {
 
 function calculateTotalMortgage(percent, contribution, amount, date) {
   if (isNaN(validateNumber(percent))) {
-    return `Параметр "Процентная ставка" содержит неправильное значение ${percent}`
+    return `Параметр "Процентная ставка" содержит неправильное значение "${percent}"`
   };
   if (isNaN(validateNumber(contribution))) {
-    return `Параметр "Сумма первоначального взноса" содержит неправильное значение ${contribution}`
+    return `Параметр "Начальный взнос" содержит неправильное значение "${contribution}"`
   };
   if (isNaN(validateNumber(amount))) {
-    return `Параметр "Сумма кредита" содержит неправильное значение ${amount}`
+    return `Параметр "Общая стоимость" содержит неправильное значение "${amount}"`
   };
   
 
@@ -40,15 +40,13 @@ function calculateTotalMortgage(percent, contribution, amount, date) {
   let numberOfMonths = (yearOfPayment - currentYear) * 12 + (monthOfPayment - currentMonth);
   let p = percent / 100 / 12;
   let monthlyPayment = loanBody * (p + p / (((1 + p)**numberOfMonths) - 1));
-  totalAmount = (monthlyPayment * numberOfMonths + contribution).toFixed(2);
+  totalAmount = (monthlyPayment * numberOfMonths).toFixed(2);
+  
   
 
-  return totalAmount;
+  return +totalAmount;
 }
 
-function validateNumber(number)  {
-  if (typeof number === "number") {
-    return number
-  } 
-  return +number;
+function validateNumber(value)  {
+  return +value;
 }
