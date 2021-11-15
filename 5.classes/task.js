@@ -80,11 +80,11 @@ class DetectiveBook  extends Book{
 class Library {
     constructor(name) {
         this.name = name;
-        this.books = new Array();
+        this.books = [];
     }
 
     addBook(book) {
-        this.#validateBook(book);
+        Library.#validateBook(book);
 
         if (book.state > 30) {
             this.books.push(book);
@@ -92,19 +92,12 @@ class Library {
     }
 
     findBookBy(type, value) {
-        return this.books.find(book => this.#isBookAppropriate(book, type, value));
-
-        for (let book of this.books)
-        {
-            if (this.#isBookAppropriate(book, type, value)) {
-                return book;
-            }
-        }
-        return null;
+        let result = this.books.find(book => book[type] === value);
+        return result === undefined ? null : result;
     }
 
     giveBookByName(bookName) {
-        const type = 'name'
+        const type = 'name';
         const booksAmount = 1;
         let book = this.findBookBy(type, bookName);
 
@@ -117,17 +110,9 @@ class Library {
         return this.books.splice(index, booksAmount)[0];
     }
 
-
-    #isBookAppropriate(book, type, value) {
-        return this.#readProperty(book, type) === value;
-    }
-
-    #readProperty(object, property) {
-        return object[property];
-    }
-
-    #validateBook(book) {
-        if (!book instanceof PrintEditionItem) {
+    static #validateBook(book) {
+        const typeCheck = book instanceof PrintEditionItem;
+        if (!typeCheck) {
             throw new Error("Invalid argument: book should be instance of  PrintEditionItem");
         }
     }
@@ -139,28 +124,23 @@ class Student {
 
     constructor(name) {
         this.#name = name;
-        this.#subjects = new Array();
+        this.#subjects = [];
     }
 
     getName() {
         return this.#name
     }
 
+
     addMark(grade, subject) {
         let concreteSubject = this.#getSubjectOrDefault(subject);
 
-        try{
-            if (concreteSubject === null) {
-                return this.#addNewSubject(subject, grade);
-            }
+        if (concreteSubject === null) {
+            concreteSubject = this.#addNewSubject(subject);
+        }
 
-            concreteSubject.addGrade(grade);
-            return concreteSubject.getCountOfGrades();
-        }
-        catch (error) {
-            return `Вы пытались поставить оценку "${grade}" по предмету "${subject}". 
-            Допускаются только числа от 1 до 5.`;
-        }
+        concreteSubject.addGrade(grade);
+        return concreteSubject.getCountOfGrades();
     }
 
     getAverageBySubject(subject) {
@@ -179,12 +159,9 @@ class Student {
             return 0;
         }
 
-        let summaryAverages = 0;
-        this.#subjects.forEach(subject => {
-            summaryAverages += subject.getAverage();
-        });
-
-        return summaryAverages / length;
+        return this.#subjects.reduce(function (sum, current) {
+            return sum + current.getAverage();
+            }, 0) / length;
     }
 
     #getSubjectOrDefault(subjectName) {
@@ -197,12 +174,11 @@ class Student {
         return null;
     }
 
-    #addNewSubject(subjectName, grade) {
+    #addNewSubject(subjectName) {
         const subject = new Subject(subjectName);
         this.#subjects.push(subject);
-        subject.addGrade(grade);
 
-        return subject.getCountOfGrades();
+        return subject;
     }
 }
 
@@ -212,7 +188,7 @@ class Subject {
 
     constructor(name) {
         this.name = name;
-        this.#grades = new Array();
+        this.#grades = [];
     }
 
     get name() {
@@ -224,9 +200,11 @@ class Subject {
     }
 
     addGrade(grade) {
-        if (this.#validateGrade(grade)) {
+        if (Subject.#validateGrade(grade)) {
             this.#grades.push(grade);
+            return;
         }
+        throw new Error('Grade should be a number between 1 and 5');
     }
 
     getCountOfGrades() {
@@ -248,13 +226,7 @@ class Subject {
         return result;
     }
 
-    #validateGrade(grade) {
-        const isValid = typeof(grade) === 'number' && grade >=1 && grade <= 5;
-
-        if (isValid) {
-            return true;
-        }
-
-        throw new Error('Grade should be a number between 1 and 5');
+    static #validateGrade(grade) {
+        return typeof(grade) === 'number' && grade >=1 && grade <= 5;
     }
 }
